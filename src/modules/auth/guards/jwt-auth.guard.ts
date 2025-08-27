@@ -20,7 +20,7 @@ interface AuthenticatedRequest extends Request {
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(
-    err: any,
+    err: Error | null,
     user: any,
     info: any,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -28,12 +28,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     status?: any,
   ): any {
-    // Debug logs
-    console.log('JWT Guard - HandleRequest');
-    console.log('Error:', err);
-    console.log('User:', user);
-    console.log('Info:', info);
-
     if (info instanceof TokenExpiredError) {
       throw new UnauthorizedException('Token has expired');
     }
@@ -41,20 +35,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     if (err || !user) {
       let errorMessage = 'Unknown error';
 
-      if (
-        err &&
-        typeof err === 'object' &&
-        'message' in err &&
-        typeof err.message === 'string'
-      ) {
+      if (err?.message) {
         errorMessage = err.message;
-      } else if (
-        info &&
-        typeof info === 'object' &&
-        'message' in info &&
-        typeof info.message === 'string'
-      ) {
-        errorMessage = info.message;
       }
 
       throw new UnauthorizedException(
