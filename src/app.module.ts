@@ -14,7 +14,7 @@ import { UsersModule } from './modules/users/users.module';
       connectionFactory: config.connectionFactory,
     }),
     AuthModule,
-    UsersModule
+    UsersModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

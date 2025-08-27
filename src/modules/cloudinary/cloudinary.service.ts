@@ -1,6 +1,10 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { v2 as cloudinary, UploadApiOptions, UploadApiResponse } from 'cloudinary';
+import {
+  v2 as cloudinary,
+  UploadApiOptions,
+  UploadApiResponse,
+} from 'cloudinary';
 import { Readable } from 'stream';
 
 @Injectable()
@@ -47,12 +51,19 @@ export class CloudinaryService {
     };
 
     return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(uploadOptions, (error, result) => {
-        if (error || !result) {
-          return reject(new InternalServerErrorException(error?.message || 'Cloudinary upload failed'));
-        }
-        resolve(result);
-      });
+      const uploadStream = cloudinary.uploader.upload_stream(
+        uploadOptions,
+        (error, result) => {
+          if (error || !result) {
+            return reject(
+              new InternalServerErrorException(
+                error?.message || 'Cloudinary upload failed',
+              ),
+            );
+          }
+          resolve(result);
+        },
+      );
 
       const readable = new Readable();
       readable.push(fileBuffer);
@@ -61,5 +72,3 @@ export class CloudinaryService {
     });
   }
 }
-
-
