@@ -17,6 +17,17 @@ import {
   RefreshTokenResponseDto,
   LogoutResponseDto,
 } from './dto/auth-response.dto';
+import { Request } from 'express';
+
+type LoginRequest = Request & {
+  connection: {
+    remoteAddress?: string;
+  };
+};
+
+interface AuthedRequest extends Request {
+  user: { userId: string };
+}
 
 @Controller('auth')
 export class AuthController {
@@ -36,7 +47,7 @@ export class AuthController {
   @Post('login')
   async login(
     @Body() loginDto: LoginDto,
-    @Req() req: any,
+    @Req() req: LoginRequest,
     @Headers('user-agent') userAgent?: string,
   ): Promise<LoginResponseDto> {
     const ipAddress = req.ip || req.connection.remoteAddress;
@@ -51,7 +62,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('logout')
   async logout(
-    @Req() req: any,
+    @Req() req: AuthedRequest,
     @Body('refreshToken') refreshToken?: string,
   ): Promise<LogoutResponseDto> {
     console.log('User in request:', req.user);

@@ -5,7 +5,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const configService = new ConfigService();
-  const port = configService.get('PORT') || 8000;
+  const port = configService.get<number>('PORT') || 8000;
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin:

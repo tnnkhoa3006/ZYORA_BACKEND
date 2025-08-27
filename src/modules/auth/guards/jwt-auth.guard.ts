@@ -5,10 +5,29 @@ import {
 } from '@nestjs/common';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
+
+interface AuthenticatedUser {
+  userId: string;
+  username: string;
+  roles: string[];
+}
+
+interface AuthenticatedRequest extends Request {
+  user: AuthenticatedUser;
+}
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  handleRequest(err: any, user: any, info: any) {
+  handleRequest(
+    err: any,
+    user: any,
+    info: any,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    context: ExecutionContext,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    status?: any,
+  ): any {
     // Debug logs
     console.log('JWT Guard - HandleRequest');
     console.log('Error:', err);
@@ -20,8 +39,26 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     if (err || !user) {
+      let errorMessage = 'Unknown error';
+
+      if (
+        err &&
+        typeof err === 'object' &&
+        'message' in err &&
+        typeof err.message === 'string'
+      ) {
+        errorMessage = err.message;
+      } else if (
+        info &&
+        typeof info === 'object' &&
+        'message' in info &&
+        typeof info.message === 'string'
+      ) {
+        errorMessage = info.message;
+      }
+
       throw new UnauthorizedException(
-        `Invalid token or unauthorized: ${err?.message || info?.message || 'Unknown error'}`,
+        `Invalid token or unauthorized: ${errorMessage}`,
       );
     }
 
@@ -30,7 +67,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
-      const request = context.switchToHttp().getRequest();
+      const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
 
       // Debug logs
       console.log('JWT Guard - CanActivate');

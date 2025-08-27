@@ -18,6 +18,17 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { Request } from 'express';
+
+interface AuthedRequest extends Request {
+  user: { userId: string };
+}
+
+interface UploadedFile {
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
 
 @Controller('users')
 export class UsersController {
@@ -28,7 +39,7 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getMe(@Req() req: any) {
+  async getMe(@Req() req: AuthedRequest) {
     return this.usersService.findById(req.user.userId);
   }
 
@@ -47,14 +58,20 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('me')
-  async updateMe(@Req() req, @Body() updateUserDto: UpdateUserDto) {
+  async updateMe(
+    @Req() req: AuthedRequest,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
     return this.usersService.update(req.user.userId, updateUserDto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Patch('me/avatar')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadAvatar(@Req() req: any, @UploadedFile() file?: any) {
+  async uploadAvatar(
+    @Req() req: AuthedRequest,
+    @UploadedFile() file?: UploadedFile,
+  ) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }

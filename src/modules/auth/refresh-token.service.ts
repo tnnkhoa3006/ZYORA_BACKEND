@@ -10,6 +10,12 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import * as crypto from 'crypto';
 
+interface UserWithId {
+  _id?: string | Types.ObjectId;
+  username: string;
+  role: string;
+}
+
 @Injectable()
 export class RefreshTokenService {
   constructor(
@@ -109,7 +115,7 @@ export class RefreshTokenService {
     }
 
     const payload = {
-      sub: (user as any)._id?.toString() || '',
+      sub: (user as UserWithId)._id?.toString() || '',
       username: user.username,
       roles: [user.role],
     };
