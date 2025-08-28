@@ -5,18 +5,6 @@ import {
 } from '@nestjs/common';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
-
-interface AuthenticatedUser {
-  userId: string;
-  username: string;
-  roles: string[];
-}
-
-interface AuthenticatedRequest extends Request {
-  user: AuthenticatedUser;
-}
-
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(
@@ -49,24 +37,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
-      const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
-
-      // Debug logs
-      console.log('JWT Guard - CanActivate');
-      console.log('Headers:', request.headers);
-      console.log('Auth header:', request.headers.authorization);
-
       const result = (await super.canActivate(context)) as boolean;
 
       if (!result) {
         throw new UnauthorizedException('Authentication failed');
       }
 
-      // Log authenticated user
-      console.log('Authenticated user:', request.user);
-
       return result;
     } catch (error) {
+      // Only log errors, not debug info
       console.error('JWT Guard error:', error);
       throw error;
     }
